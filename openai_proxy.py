@@ -144,8 +144,13 @@ async def create_chat_completion(request: ChatCompletionRequest) -> StreamingRes
                         if "delta" in choice:
                             delta = choice["delta"]
                             # Log reasoning/thinking content
-                            if "reasoning_content" in delta and delta["reasoning_content"]:
-                                logger.info(f"🧠 Reasoning: {delta['reasoning_content']}")
+                            if (
+                                "reasoning_content" in delta
+                                and delta["reasoning_content"]
+                            ):
+                                logger.info(
+                                    f"🧠 Reasoning: {delta['reasoning_content']}"
+                                )
                             # Log actual content
                             if "content" in delta and delta["content"]:
                                 logger.info(f"Response chunk: {delta['content']}")

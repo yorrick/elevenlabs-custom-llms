@@ -3,7 +3,8 @@
     "allow": [
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "mcp__perplexity-ask__perplexity_ask"
+      "mcp__perplexity-ask__perplexity_ask",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
