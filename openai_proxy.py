@@ -2,7 +2,7 @@
 # requires-python = ">=3.9"
 # dependencies = [
 #   "fastapi",
-#   "openai",
+#   "litellm",
 #   "uvicorn",
 #   "python-dotenv",
 #   "loguru",
@@ -12,10 +12,11 @@
 from importlib import reload
 import json
 import os
+import sys
 import fastapi
 from fastapi import Request
 from fastapi.responses import StreamingResponse
-from openai import AsyncOpenAI
+import litellm
 import uvicorn
 from loguru import logger
 from dotenv import load_dotenv
@@ -25,24 +26,42 @@ from typing import List, Optional
 # Load environment variables from .env file
 load_dotenv()
 
+# Configure logger: INFO level by default, DEBUG for detailed request bodies
+logger.remove()  # Remove default handler
+logger.add(sys.stderr, level="INFO", format="{time} {level} {message}")
+
 # Retrieve API key from environment
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    raise ValueError("OPENAI_API_KEY not found in environment variables")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    raise ValueError("GEMINI_API_KEY not found in environment variables")
+
+# Set LiteLLM API key for Gemini
+os.environ["GEMINI_API_KEY"] = GEMINI_API_KEY
 
 app = fastapi.FastAPI()
-oai_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
 
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     logger.info(f"Incoming request: {request.method} {request.url.path}")
-    logger.info(f"Headers: {dict(request.headers)}")
+    logger.debug(f"Headers: {dict(request.headers)}")
 
     # Read and log body for POST requests
     if request.method == "POST":
         body = await request.body()
-        logger.info(f"Body: {body.decode()}")
+        logger.debug(f"Body: {body.decode()}")
+
+        # Log conversation messages at INFO level
+        try:
+            body_json = json.loads(body.decode())
+            if "messages" in body_json:
+                for msg in body_json["messages"]:
+                    role = msg.get("role", "unknown")
+                    if role in ["user", "assistant"]:
+                        content = msg.get("content", "")
+                        logger.info(f"Conversation [{role}]: {content}")
+        except Exception as e:
+            logger.debug(f"Could not parse messages: {e}")
 
         # Create a new request with the body since we consumed it
         from starlette.requests import Request as StarletteRequest
@@ -85,19 +104,38 @@ class ChatCompletionRequest(BaseModel):
 
 @app.post("/v1/chat/completions")
 async def create_chat_completion(request: ChatCompletionRequest) -> StreamingResponse:
-    logger.info(f"Request: model={request.model}, stream={request.stream}, messages={len(request.messages)}")
+    logger.info(
+        f"Request: model={request.model}, stream={request.stream}, messages={len(request.messages)}"
+    )
 
-    oai_request = request.dict(exclude_none=True)
-    if "user_id" in oai_request:
-        oai_request["user"] = oai_request.pop("user_id")
+    # Convert messages to dict format
+    messages = [msg.dict() for msg in request.messages]
 
-    chat_completion_coroutine = await oai_client.chat.completions.create(**oai_request)
+    # Use Gemini Flash via LiteLLM
+    litellm_request = {
+        "model": "gemini/gemini-2.5-flash",  # Gemini 3.0 Flash
+        "messages": messages,
+        "stream": request.stream,
+    }
+
+    if request.temperature is not None:
+        litellm_request["temperature"] = request.temperature
+    if request.max_tokens is not None:
+        litellm_request["max_tokens"] = request.max_tokens
+
+    response = await litellm.acompletion(**litellm_request)
 
     async def event_stream():
         try:
-            async for chunk in chat_completion_coroutine:
-                # Convert the ChatCompletionChunk to a dictionary before JSON serialization
-                chunk_dict = chunk.model_dump()
+            async for chunk in response:
+                # LiteLLM returns OpenAI-compatible chunks
+                # Convert to dict if needed
+                if hasattr(chunk, "model_dump"):
+                    chunk_dict = chunk.model_dump()
+                elif hasattr(chunk, "dict"):
+                    chunk_dict = chunk.dict()
+                else:
+                    chunk_dict = dict(chunk)
                 yield f"data: {json.dumps(chunk_dict)}\n\n"
             yield "data: [DONE]\n\n"
         except Exception as e:

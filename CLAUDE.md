@@ -1,5 +1,25 @@
 # ElevenLabs Agent Configuration
 
+## Project Overview
+
+This is an **experimental project** for creating a custom LLM proxy for ElevenLabs agents.
+
+**Dependencies:** This project uses UV for dependency management. Dependencies are defined **inline** in the `openai_proxy.py` file using the PEP 723 inline script metadata format (see the `# /// script` block at the top of the file).
+
+## Development Guidelines
+
+**IMPORTANT:** Every time you update `openai_proxy.py`, you MUST check the server logs to verify that:
+1. The server reloaded successfully without errors
+2. No import errors or dependency issues occurred
+3. The changes are working as expected
+
+The server runs with `--reload` flag, so changes should trigger an automatic reload. Check the logs for:
+- `Watching for file changes` (indicates reload is active)
+- Any Python tracebacks or error messages
+- Successful startup messages
+
+If the server is running with log capture, read the `server.log` file to verify the reload.
+
 ## Testing APIs - HTTPie Preference
 
 **Always use HTTPie instead of curl for testing APIs.**

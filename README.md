@@ -22,9 +22,24 @@ The script uses UV's inline dependencies feature, so you can run it with a singl
 uv run openai_proxy.py
 ```
 
-UV will automatically install all required dependencies (fastapi, openai, uvicorn, python-dotenv) in an isolated environment and run the server.
+UV will automatically install all required dependencies (fastapi, litellm, uvicorn, python-dotenv, loguru) in an isolated environment and run the server.
 
 The server will start on `http://0.0.0.0:8013`
+
+### Logging
+
+To capture server logs to both console and file (for debugging or for Claude Code to read):
+
+```bash
+# Redirect all output to both console and file
+uv run openai_proxy.py 2>&1 | tee server.log
+```
+
+This uses `tee` to write logs to both:
+- **Console (stdout)**: So you can see them in real-time
+- **File (`server.log`)**: So Claude Code can read and analyze them
+
+The `2>&1` redirects stderr to stdout so all log messages are captured.
 
 ## API Usage
 
