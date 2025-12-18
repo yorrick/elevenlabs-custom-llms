@@ -26,9 +26,15 @@ from typing import List, Optional
 # Load environment variables from .env file
 load_dotenv()
 
-# Configure logger: INFO level by default, DEBUG for detailed request bodies
+# Configure logger: Use LOGURU_LEVEL env var, default to INFO
 logger.remove()  # Remove default handler
-logger.add(sys.stderr, level="INFO", format="{time} {level} {message}")
+log_level = os.getenv("LOGURU_LEVEL", "INFO")
+logger.add(
+    sys.stderr,
+    level=log_level,
+    format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <level>{message}</level>",
+    colorize=True,
+)
 
 # Retrieve API key from environment
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -51,15 +57,18 @@ async def log_requests(request: Request, call_next):
         body = await request.body()
         logger.debug(f"Body: {body.decode()}")
 
-        # Log conversation messages at INFO level
+        # Log conversation messages at INFO level with colors
         try:
             body_json = json.loads(body.decode())
             if "messages" in body_json:
                 for msg in body_json["messages"]:
                     role = msg.get("role", "unknown")
-                    if role in ["user", "assistant"]:
+                    if role == "user":
                         content = msg.get("content", "")
-                        logger.info(f"Conversation [{role}]: {content}")
+                        logger.opt(colors=True).info(f"<cyan>👤 USER: {content}</cyan>")
+                    elif role == "assistant":
+                        content = msg.get("content", "")
+                        logger.opt(colors=True).info(f"<green>🤖 ASSISTANT: {content}</green>")
         except Exception as e:
             logger.debug(f"Could not parse messages: {e}")
 
@@ -99,24 +108,27 @@ class ChatCompletionRequest(BaseModel):
     temperature: Optional[float] = 0.7
     max_tokens: Optional[int] = None
     stream: Optional[bool] = False
+    reasoning_effort: Optional[str] = "medium"
     user_id: Optional[str] = None
 
 
 @app.post("/v1/chat/completions")
 async def create_chat_completion(request: ChatCompletionRequest) -> StreamingResponse:
     logger.info(
-        f"Request: model={request.model}, stream={request.stream}, messages={len(request.messages)}"
+        f"Request: model={request.model}, stream={request.stream}, "
+        f"reasoning_effort={request.reasoning_effort}, messages={len(request.messages)}"
     )
 
     # Convert messages to dict format
     messages = [msg.dict() for msg in request.messages]
 
-    # Use Gemini Flash via LiteLLM
+    # Pass request to LiteLLM
     litellm_request = {
-        "model": "gemini/gemini-2.5-flash",  # Gemini 2.5 Flash
+        "model": request.model,
         "messages": messages,
         "stream": request.stream,
-        "reasoning_effort": "low",  # LiteLLM parameter for thinking level (low/medium/high)
+        "reasoning_effort": request.reasoning_effort,
+        "drop_params": True,  # Silently drop unsupported params like reasoning_effort
     }
 
     if request.temperature is not None:
@@ -148,12 +160,12 @@ async def create_chat_completion(request: ChatCompletionRequest) -> StreamingRes
                                 "reasoning_content" in delta
                                 and delta["reasoning_content"]
                             ):
-                                logger.info(
-                                    f"🧠 Reasoning: {delta['reasoning_content']}"
+                                logger.opt(colors=True).info(
+                                    f"<magenta>🧠 REASONING: {delta['reasoning_content']}</magenta>"
                                 )
                             # Log actual content
                             if "content" in delta and delta["content"]:
-                                logger.info(f"Response chunk: {delta['content']}")
+                                logger.opt(colors=True).info(f"<green>🤖 ASSISTANT: {delta['content']}</green>")
 
                 yield f"data: {json.dumps(chunk_dict)}\n\n"
             yield "data: [DONE]\n\n"

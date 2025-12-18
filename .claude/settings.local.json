@@ -4,7 +4,9 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "mcp__perplexity-ask__perplexity_ask",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(uv run:*)",
+      "WebFetch(domain:elevenlabs.io)"
     ],
     "deny": [],
     "ask": []

@@ -20,6 +20,19 @@ The server runs with `--reload` flag, so changes should trigger an automatic rel
 
 If the server is running with log capture, read the `server.log` file to verify the reload.
 
+### Research and Verification
+
+**CRITICAL:** ALWAYS use Perplexity search when you don't have a high level of certainty about how to implement something. This is MANDATORY, not optional.
+
+You MUST use Perplexity for:
+- API endpoints, request/response formats, and parameter names
+- Library-specific syntax and features (e.g., Loguru colors, LiteLLM parameters)
+- Model capabilities and available features
+- Best practices for libraries you're using
+- Any technical detail where you're not 100% certain
+
+**DO NOT GUESS. DO NOT ASSUME. ALWAYS VERIFY WITH PERPLEXITY FIRST.**
+
 ## Testing APIs - HTTPie Preference
 
 **Always use HTTPie instead of curl for testing APIs.**
