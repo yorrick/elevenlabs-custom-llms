@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "mcp__perplexity-ask__perplexity_ask"
     ],
     "deny": [],
     "ask": []

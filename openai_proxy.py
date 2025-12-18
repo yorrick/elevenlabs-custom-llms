@@ -113,9 +113,10 @@ async def create_chat_completion(request: ChatCompletionRequest) -> StreamingRes
 
     # Use Gemini Flash via LiteLLM
     litellm_request = {
-        "model": "gemini/gemini-2.5-flash",  # Gemini 3.0 Flash
+        "model": "gemini/gemini-2.5-flash",  # Gemini 2.5 Flash
         "messages": messages,
         "stream": request.stream,
+        "reasoning_effort": "low",  # LiteLLM parameter for thinking level (low/medium/high)
     }
 
     if request.temperature is not None:
@@ -136,6 +137,19 @@ async def create_chat_completion(request: ChatCompletionRequest) -> StreamingRes
                     chunk_dict = chunk.dict()
                 else:
                     chunk_dict = dict(chunk)
+
+                # Log delta keys and content
+                if "choices" in chunk_dict:
+                    for choice in chunk_dict["choices"]:
+                        if "delta" in choice:
+                            delta = choice["delta"]
+                            # Log reasoning/thinking content
+                            if "reasoning_content" in delta and delta["reasoning_content"]:
+                                logger.info(f"🧠 Reasoning: {delta['reasoning_content']}")
+                            # Log actual content
+                            if "content" in delta and delta["content"]:
+                                logger.info(f"Response chunk: {delta['content']}")
+
                 yield f"data: {json.dumps(chunk_dict)}\n\n"
             yield "data: [DONE]\n\n"
         except Exception as e:
