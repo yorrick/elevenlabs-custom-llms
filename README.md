@@ -11,7 +11,7 @@ A FastAPI-based proxy server for OpenAI chat completions API with support for st
 
 1. Create a `.env` file in the project directory:
 ```env
-OPENAI_API_KEY=your_openai_api_key_here
+GEMINI_API_KEY=your_api_key_here
 ```
 
 ## Running the Server

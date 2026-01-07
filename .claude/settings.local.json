@@ -6,7 +6,10 @@
       "mcp__perplexity-ask__perplexity_ask",
       "Bash(git push:*)",
       "Bash(uv run:*)",
-      "WebFetch(domain:elevenlabs.io)"
+      "WebFetch(domain:elevenlabs.io)",
+      "Bash(uv tool run ruff check:*)",
+      "Bash(uv tool run ruff format:*)",
+      "Bash(uv tool run pyright:*)"
     ],
     "deny": [],
     "ask": []

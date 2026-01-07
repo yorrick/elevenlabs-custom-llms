@@ -9,7 +9,6 @@
 # ]
 # ///
 
-from importlib import reload
 import json
 import os
 import sys
@@ -68,7 +67,9 @@ async def log_requests(request: Request, call_next):
                         logger.opt(colors=True).info(f"<cyan>👤 USER: {content}</cyan>")
                     elif role == "assistant":
                         content = msg.get("content", "")
-                        logger.opt(colors=True).info(f"<green>🤖 ASSISTANT: {content}</green>")
+                        logger.opt(colors=True).info(
+                            f"<green>🤖 ASSISTANT: {content}</green>"
+                        )
         except Exception as e:
             logger.debug(f"Could not parse messages: {e}")
 
@@ -165,7 +166,9 @@ async def create_chat_completion(request: ChatCompletionRequest) -> StreamingRes
                                 )
                             # Log actual content
                             if "content" in delta and delta["content"]:
-                                logger.opt(colors=True).info(f"<green>🤖 ASSISTANT: {delta['content']}</green>")
+                                logger.opt(colors=True).info(
+                                    f"<green>🤖 ASSISTANT: {delta['content']}</green>"
+                                )
 
                 yield f"data: {json.dumps(chunk_dict)}\n\n"
             yield "data: [DONE]\n\n"
@@ -177,4 +180,10 @@ async def create_chat_completion(request: ChatCompletionRequest) -> StreamingRes
 
 
 if __name__ == "__main__":
-    uvicorn.run("openai_proxy:app", host="0.0.0.0", port=8013, reload=True)
+    import os
+
+    # Get module name from file name (without .py extension)
+    # This allows the file to be renamed without updating the uvicorn.run() call
+    # We need to pass an import string (not the app object) to enable reload
+    module_name = os.path.splitext(os.path.basename(__file__))[0]
+    uvicorn.run(f"{module_name}:app", host="0.0.0.0", port=8013, reload=True)
