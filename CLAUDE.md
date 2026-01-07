@@ -165,6 +165,38 @@ When setting up a custom LLM, the important fields are:
 
 Full ElevenLabs API documentation: https://elevenlabs.io/docs/api-reference/agents
 
+## Running Agent Tests
+
+You can run tests against your agent to verify its behavior.
+
+**Endpoint:**
+
+```http
+POST https://api.elevenlabs.io/v1/convai/agents/{agent_id}/run-tests
+```
+
+**Example using HTTPie with environment variables:**
+
+```bash
+echo '{"tests": [{"test_id": "'$ELEVENLABS_TEST_ID'"}]}' | \
+  http POST https://api.elevenlabs.io/v1/convai/agents/$ELEVENLABS_AGENT_ID/run-tests \
+  "xi-api-key: $ELEVENLABS_API_KEY"
+```
+
+**Example using HTTPie with inline values:**
+
+```bash
+http POST https://api.elevenlabs.io/v1/convai/agents/agent_2501k520e4p6eqs87ga1ke8a67fs/run-tests \
+  xi-api-key:YOUR_ELEVENLABS_API_KEY \
+  tests:='[{"test_id": "your_test_id"}]'
+```
+
+**Required environment variables:**
+
+- `ELEVENLABS_AGENT_ID`: Your agent ID (e.g., `agent_2501k520e4p6eqs87ga1ke8a67fs`)
+- `ELEVENLABS_TEST_ID`: The test ID you want to run
+- `ELEVENLABS_API_KEY`: Your ElevenLabs API key
+
 ## Troubleshooting Custom LLM
 
 ### No requests reaching your server?
