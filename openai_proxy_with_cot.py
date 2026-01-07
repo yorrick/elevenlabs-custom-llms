@@ -186,4 +186,4 @@ if __name__ == "__main__":
     # This allows the file to be renamed without updating the uvicorn.run() call
     # We need to pass an import string (not the app object) to enable reload
     module_name = os.path.splitext(os.path.basename(__file__))[0]
-    uvicorn.run(f"{module_name}:app", host="0.0.0.0", port=8013, reload=True)
+    uvicorn.run(f"{module_name}:app", host="127.0.0.1", port=8013, reload=True)
