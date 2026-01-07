@@ -6,21 +6,31 @@
 #   "uvicorn",
 #   "python-dotenv",
 #   "loguru",
+#   "aiosqlite",
+#   "twilio",
+#   "python-multipart",
 # ]
 # ///
 
 import json
 import os
 import sys
+import warnings
 import fastapi
-from fastapi import Request
-from fastapi.responses import StreamingResponse
+from fastapi import Request, Form
+from fastapi.responses import StreamingResponse, Response
 import litellm
 import uvicorn
 from loguru import logger
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from typing import List, Optional
+import aiosqlite
+from datetime import datetime
+from contextlib import asynccontextmanager
+
+# Suppress Pydantic serialization warnings from LiteLLM streaming
+warnings.filterwarnings("ignore", message=".*Pydantic serializer warnings.*")
 
 # Load environment variables from .env file
 load_dotenv()
@@ -43,7 +53,37 @@ if not GEMINI_API_KEY:
 # Set LiteLLM API key for Gemini
 os.environ["GEMINI_API_KEY"] = GEMINI_API_KEY
 
-app = fastapi.FastAPI()
+# Database file path
+DB_PATH = os.getenv("DB_PATH", "notifications.db")
+
+
+async def init_db():
+    """Initialize the SQLite database with notifications table"""
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS notifications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                from_number TEXT NOT NULL,
+                to_number TEXT NOT NULL,
+                message TEXT NOT NULL,
+                received_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                is_read INTEGER DEFAULT 0
+            )
+        """)
+        await db.commit()
+    logger.info("Database initialized")
+
+
+@asynccontextmanager
+async def lifespan(app: fastapi.FastAPI):
+    """Lifespan event handler for startup and shutdown"""
+    # Startup
+    await init_db()
+    yield
+    # Shutdown (cleanup if needed)
+
+
+app = fastapi.FastAPI(lifespan=lifespan)
 
 
 @app.middleware("http")
@@ -86,6 +126,70 @@ async def log_requests(request: Request, call_next):
     return response
 
 
+@app.post("/webhook/twilio/sms")
+async def twilio_sms_webhook(
+    From: str = Form(...),
+    To: str = Form(...),
+    Body: str = Form(...),
+):
+    """
+    Webhook endpoint for Twilio SMS.
+    Twilio sends form-encoded data with From, To, Body fields.
+    """
+    logger.opt(colors=True).info(
+        f"<yellow>📱 SMS received from {From} to {To}: {Body}</yellow>"
+    )
+
+    # Store notification in database
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute(
+            """
+            INSERT INTO notifications (from_number, to_number, message, received_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            (From, To, Body, datetime.utcnow().isoformat()),
+        )
+        await db.commit()
+
+    logger.info("SMS notification stored in database")
+
+    # Respond to Twilio with empty TwiML (no response message)
+    return Response(
+        content='<?xml version="1.0" encoding="UTF-8"?><Response></Response>',
+        media_type="application/xml",
+    )
+
+
+async def get_unread_notifications():
+    """Retrieve all unread notifications from the database"""
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute(
+            """
+            SELECT id, from_number, to_number, message, received_at
+            FROM notifications
+            WHERE is_read = 0
+            ORDER BY received_at ASC
+            """
+        ) as cursor:
+            rows = await cursor.fetchall()
+            return [dict(row) for row in rows]
+
+
+async def mark_notifications_as_read(notification_ids: List[int]):
+    """Mark notifications as read"""
+    if not notification_ids:
+        return
+
+    async with aiosqlite.connect(DB_PATH) as db:
+        placeholders = ",".join("?" * len(notification_ids))
+        await db.execute(
+            f"UPDATE notifications SET is_read = 1 WHERE id IN ({placeholders})",
+            notification_ids,
+        )
+        await db.commit()
+
+
 class Message(BaseModel):
     role: str
     content: str
@@ -107,8 +211,32 @@ async def create_chat_completion(request: ChatCompletionRequest) -> StreamingRes
         f"messages={len(request.messages)}"
     )
 
+    # Get unread notifications
+    unread_notifications = await get_unread_notifications()
+
     # Convert messages to dict format
     messages = [msg.dict() for msg in request.messages]
+
+    # Inject unread notifications into the conversation
+    if unread_notifications:
+        notification_ids = [notif["id"] for notif in unread_notifications]
+
+        # Inject SMS messages as user messages (from the client)
+        # Insert them at the end of the conversation, just before the latest user message
+        for notif in unread_notifications:
+            user_message = {
+                "role": "user",
+                "content": f"[SMS from client]: {notif['message']}",
+            }
+            # Insert before the last user message
+            messages.insert(-1 if messages else 0, user_message)
+
+        logger.opt(colors=True).info(
+            f"<yellow>📬 Injecting {len(unread_notifications)} SMS from client</yellow>"
+        )
+
+        # Mark notifications as read
+        await mark_notifications_as_read(notification_ids)
 
     # Pass request to LiteLLM - simple pass-through
     litellm_request = {

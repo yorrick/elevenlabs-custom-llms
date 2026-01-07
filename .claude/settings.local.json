@@ -9,7 +9,8 @@
       "WebFetch(domain:elevenlabs.io)",
       "Bash(uv tool run ruff check:*)",
       "Bash(uv tool run ruff format:*)",
-      "Bash(uv tool run pyright:*)"
+      "Bash(uv tool run pyright:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

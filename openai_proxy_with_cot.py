@@ -86,18 +86,6 @@ async def log_requests(request: Request, call_next):
     return response
 
 
-@app.get("/")
-async def health_check():
-    logger.info("Health check endpoint hit")
-    return {"status": "ok", "service": "openai-proxy"}
-
-
-@app.get("/v1")
-async def health_check_v1():
-    logger.info("V1 health check endpoint hit")
-    return {"status": "ok", "service": "openai-proxy", "version": "v1"}
-
-
 class Message(BaseModel):
     role: str
     content: str

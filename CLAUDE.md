@@ -22,6 +22,8 @@ If the server is running with log capture, read the `server.log` file to verify 
 
 **Code Quality:** After each change, run `uv tool run ruff format <updated-file>`, `uv tool run ruff check --fix <updated-file>`, and `uv tool run pyright <updated-file>` to ensure the code is formatted and linted correctly.
 
+**Performance:** Performance is critical in the `/v1/chat/completions` endpoint. Avoid unnecessary serialization/deserialization cycles, extra JSON parsing, or any operations that add latency to the streaming response. ElevenLabs agents require low-latency responses for real-time conversation.
+
 ### Research and Verification
 
 **CRITICAL:** ALWAYS use Perplexity search when you don't have a high level of certainty about how to implement something. This is MANDATORY, not optional.
