@@ -76,6 +76,21 @@ curl -X POST http://localhost:8013/v1/chat/completions \
   }'
 ```
 
+## Testing with ElevenLabs
+
+To trigger ElevenLabs agent tests, use the following HTTPie command:
+
+```bash
+echo '{"tests": [{"test_id": "'$ELEVENLABS_TEST_ID'"}]}' | \
+  http POST https://api.elevenlabs.io/v1/convai/agents/$ELEVENLABS_AGENT_ID/run-tests \
+  "xi-api-key: $ELEVENLABS_API_KEY"
+```
+
+Required environment variables:
+- `ELEVENLABS_AGENT_ID`: Your agent ID (e.g., `agent_2501k520e4p6eqs87ga1ke8a67fs`)
+- `ELEVENLABS_TEST_ID`: The test ID you want to run
+- `ELEVENLABS_API_KEY`: Your ElevenLabs API key
+
 ## Features
 
 - OpenAI chat completions proxy
