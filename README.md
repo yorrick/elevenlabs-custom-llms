@@ -1,11 +1,11 @@
 # OpenAI Proxy Server
 
-A FastAPI-based proxy server for OpenAI chat completions API with support for streaming responses.
+Back your ElevenLabs agents with code, using an OpenAI compatible API.
 
 ## Prerequisites
 
 - [UV](https://docs.astral.sh/uv/) installed
-- OpenAI API key
+- OpenAI/Gemini/... API key
 
 ## Setup
 
@@ -19,12 +19,12 @@ GEMINI_API_KEY=your_api_key_here
 The script uses UV's inline dependencies feature, so you can run it with a single command:
 
 ```bash
-uv run openai_proxy.py
+uv run openai_proxy_simple.py
 ```
 
 UV will automatically install all required dependencies (fastapi, litellm, uvicorn, python-dotenv, loguru) in an isolated environment and run the server.
 
-The server will start on `http://0.0.0.0:8013`
+The server will start on `http://127.0.0.1:8013`
 
 ### Logging
 
@@ -32,7 +32,7 @@ To capture server logs to both console and file (for debugging or for Claude Cod
 
 ```bash
 # Redirect all output to both console and file
-uv run openai_proxy.py 2>&1 | tee server.log
+uv run openai_proxy_simple.py 2>&1 | tee server.log
 ```
 
 This uses `tee` to write logs to both:
