@@ -8,6 +8,20 @@ This is an **experimental project** for creating a custom LLM proxy for ElevenLa
 
 ## Development Guidelines
 
+**CRITICAL: NO WORKAROUNDS WITHOUT CONFIRMATION**
+
+Before implementing any workarounds, hacks, or temporary solutions to bugs or errors:
+1. **ALWAYS ask for user confirmation first**
+2. Present the issue and potential solutions
+3. Wait for explicit approval before implementing any workaround
+4. **NEVER** go ahead and implement workarounds without confirmation
+
+This applies to:
+- Disabling features to work around bugs
+- Adding temporary code to bypass issues
+- Implementing fallback behaviors
+- Any non-standard solution to a problem
+
 **IMPORTANT:** Every time you update `openai_proxy_xxx.py`, you MUST check the server logs to verify that:
 1. The server reloaded successfully without errors
 2. No import errors or dependency issues occurred
