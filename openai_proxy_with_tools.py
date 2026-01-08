@@ -14,7 +14,7 @@ import os
 import sys
 import warnings
 import fastapi
-from fastapi import Request
+from fastapi import Request, Header, HTTPException, Depends
 from fastapi.responses import StreamingResponse, JSONResponse
 import litellm
 import uvicorn
@@ -47,7 +47,19 @@ if not GEMINI_API_KEY:
 # Set LiteLLM API key for Gemini
 os.environ["GEMINI_API_KEY"] = GEMINI_API_KEY
 
+# Tool authentication header
+TOOL_AUTH_HEADER = os.getenv("TOOL_AUTH_HEADER")
+
 app = fastapi.FastAPI()
+
+
+async def verify_tool_auth(auth: Optional[str] = Header(None)):
+    """Verify tool authentication header."""
+    if TOOL_AUTH_HEADER and auth != TOOL_AUTH_HEADER:
+        logger.warning(f"Unauthorized tool access attempt with auth header: {auth}")
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return auth
+
 
 # Static inventory data for the three store locations
 INVENTORY_DATA = {
@@ -393,7 +405,12 @@ Return ONLY the product name or "NO_MATCH", nothing else."""
 
 
 @app.get("/tools/inventory_check")
-async def inventory_check(item_name: str, store_id: str) -> JSONResponse:
+async def inventory_check(
+    request: Request,
+    item_name: str,
+    store_id: str,
+    auth: str = Depends(verify_tool_auth),
+) -> JSONResponse:
     """
     Tool endpoint for checking inventory at a specific store location.
     This endpoint is called by ElevenLabs when the agent decides to check inventory.
@@ -402,6 +419,7 @@ async def inventory_check(item_name: str, store_id: str) -> JSONResponse:
     logger.opt(colors=True).info(
         f"<yellow>🔧 Inventory check: item='{item_name}', store_id='{store_id}'</yellow>"
     )
+    logger.info(f"Tool call headers: {dict(request.headers)}")
 
     # Check if store exists
     if store_id not in INVENTORY_DATA:
