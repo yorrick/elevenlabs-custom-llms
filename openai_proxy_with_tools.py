@@ -12,6 +12,7 @@
 import json
 import os
 import sys
+import warnings
 import fastapi
 from fastapi import Request
 from fastapi.responses import StreamingResponse, JSONResponse
@@ -24,6 +25,9 @@ from typing import List, Optional, Any, Dict
 
 # Load environment variables from .env file
 load_dotenv()
+
+# Suppress Pydantic serialization warnings from LiteLLM streaming
+warnings.filterwarnings("ignore", message=".*Pydantic serializer warnings.*")
 
 # Configure logger: Use LOGURU_LEVEL env var, default to INFO
 logger.remove()  # Remove default handler

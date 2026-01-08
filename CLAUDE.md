@@ -38,6 +38,17 @@ If the server is running with log capture, read the `server.log` file to verify 
 
 **Performance:** Performance is critical in the `/v1/chat/completions` endpoint. Avoid unnecessary serialization/deserialization cycles, extra JSON parsing, or any operations that add latency to the streaming response. ElevenLabs agents require low-latency responses for real-time conversation.
 
+**Suppressing LiteLLM Warnings:** When creating new proxy files, always add this warning suppression after imports to avoid noisy Pydantic serialization warnings from LiteLLM streaming (known bug: https://github.com/BerriAI/litellm/issues/11759):
+
+```python
+import warnings
+
+# Suppress Pydantic serialization warnings from LiteLLM streaming
+warnings.filterwarnings("ignore", message=".*Pydantic serializer warnings.*")
+```
+
+Place this before any LiteLLM usage or FastAPI app initialization.
+
 ### Research and Verification
 
 **CRITICAL:** ALWAYS use Perplexity search when you don't have a high level of certainty about how to implement something. This is MANDATORY, not optional.
