@@ -1,0 +1,10 @@
+{
+    "tests": [
+        {
+            "config": "test_configs/inventory-check.json",
+            "id": "test_7301keb0sc6zftp8d6214k020c3q",
+            "type": "llm",
+            "env": "prod"
+        }
+    ]
+}

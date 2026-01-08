@@ -1,0 +1,48 @@
+{
+    "type": "webhook",
+    "name": "inventory_check",
+    "description": "Use this tool to check if an item is in stock at a specific store.  ",
+    "response_timeout_secs": 20,
+    "disable_interruptions": true,
+    "force_pre_tool_speech": true,
+    "assignments": [],
+    "tool_call_sound": null,
+    "tool_call_sound_behavior": "auto",
+    "dynamic_variables": {
+        "dynamic_variable_placeholders": {}
+    },
+    "execution_mode": "immediate",
+    "api_schema": {
+        "request_headers": {
+            "auth": {
+                "secret_id": "KJJhxT27sAGy7yUkUluz"
+            }
+        },
+        "url": "https://yorrick.ngrok.dev/tools/inventory_check",
+        "method": "GET",
+        "path_params_schema": {},
+        "query_params_schema": {
+            "properties": {
+                "store_id": {
+                    "type": "string",
+                    "description": "The UUID of the specific store location, retrieved from the knowledge data.",
+                    "is_system_provided": false,
+                    "dynamic_variable": "",
+                    "constant_value": ""
+                },
+                "item_name": {
+                    "type": "string",
+                    "description": "The name of the product the user is asking about. E.g., \"DeWalt 20V MAX cordless drill\".  ",
+                    "is_system_provided": false,
+                    "dynamic_variable": "",
+                    "constant_value": ""
+                }
+            },
+            "required": [
+                "store_id",
+                "item_name"
+            ]
+        },
+        "content_type": "application/json"
+    }
+}

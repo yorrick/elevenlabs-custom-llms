@@ -1,0 +1,58 @@
+{
+    "tools": [
+        {
+            "type": "webhook",
+            "config": "tool_configs/inventory_check.json",
+            "id": "tool_2801k5hnwtrte3tt2k8sdnta1v62",
+            "env": "prod"
+        },
+        {
+            "type": "webhook",
+            "config": "tool_configs/inventory_check-2.json",
+            "id": "tool_2801k5hnwtrte3tt2k8sdnta1v62",
+            "env": "prod"
+        },
+        {
+            "type": "webhook",
+            "config": "tool_configs/inventory_check-5.json",
+            "id": "tool_2801k5hnwtrte3tt2k8sdnta1v62",
+            "env": "prod"
+        },
+        {
+            "type": "webhook",
+            "config": "tool_configs/inventory_check-6.json",
+            "id": "tool_2801k5hnwtrte3tt2k8sdnta1v62",
+            "env": "prod"
+        },
+        {
+            "type": "webhook",
+            "config": "tool_configs/inventory_check-8.json",
+            "id": "tool_2801k5hnwtrte3tt2k8sdnta1v62",
+            "env": "prod"
+        },
+        {
+            "type": "webhook",
+            "config": "tool_configs/inventory_check-9.json",
+            "id": "tool_2801k5hnwtrte3tt2k8sdnta1v62",
+            "env": "prod"
+        },
+        {
+            "type": "webhook",
+            "config": "tool_configs/inventory_check-11.json",
+            "id": "tool_2801k5hnwtrte3tt2k8sdnta1v62",
+            "env": "prod"
+        },
+        {
+            "type": "webhook",
+            "config": "tool_configs/inventory_check-12.json",
+            "id": "tool_2801k5hnwtrte3tt2k8sdnta1v62",
+            "env": "prod"
+        },
+        {
+            "type": "webhook",
+            "config": "tool_configs/inventory_check-13.json",
+            "id": "tool_2801k5hnwtrte3tt2k8sdnta1v62",
+            "env": "prod"
+        }
+    ]
+}

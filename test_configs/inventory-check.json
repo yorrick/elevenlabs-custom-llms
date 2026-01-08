@@ -1,0 +1,19 @@
+{
+    "chat_history": [
+        {
+            "role": "user",
+            "message": "Hello, I'm looking for 2x4 in the Burnaby store",
+            "tool_calls": [],
+            "tool_results": [],
+            "time_in_call_secs": 0,
+            "interrupted": false
+        }
+    ],
+    "success_condition": "Agent should check inventory with tool, with store_id d8e8f8f8-3d3d-4c4c-8c8c-8c8c8c8c8c8c",
+    "success_examples": [],
+    "failure_examples": [],
+    "dynamic_variables": {},
+    "type": "llm",
+    "id": "test_7301keb0sc6zftp8d6214k020c3q",
+    "name": "inventory-check"
+}

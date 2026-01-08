@@ -1,0 +1,9 @@
+{
+    "agents": [
+        {
+            "config": "agent_configs/Builder's-Hub-Hardware.json",
+            "id": "agent_2501k520e4p6eqs87ga1ke8a67fs",
+            "env": "prod"
+        }
+    ]
+}

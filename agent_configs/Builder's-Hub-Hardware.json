@@ -1,0 +1,436 @@
+{
+    "name": "Builder's Hub Hardware",
+    "conversation_config": {
+        "asr": {
+            "quality": "high",
+            "provider": "elevenlabs",
+            "user_input_audio_format": "pcm_16000",
+            "keywords": []
+        },
+        "turn": {
+            "turn_timeout": 7,
+            "initial_wait_time": null,
+            "silence_end_call_timeout": -1,
+            "soft_timeout_config": {
+                "timeout_seconds": -1,
+                "message": "Hhmmmm...yeah give me a second...",
+                "use_llm_generated_message": false
+            },
+            "mode": "turn",
+            "turn_eagerness": "normal"
+        },
+        "tts": {
+            "model_id": "eleven_turbo_v2",
+            "voice_id": "cjVigY5qzO86Huf0OWal",
+            "supported_voices": [],
+            "suggested_audio_tags": [],
+            "agent_output_audio_format": "pcm_16000",
+            "optimize_streaming_latency": 3,
+            "stability": 0.5,
+            "speed": 1,
+            "similarity_boost": 0.8,
+            "text_normalisation_type": "system_prompt",
+            "pronunciation_dictionary_locators": []
+        },
+        "conversation": {
+            "text_only": false,
+            "max_duration_seconds": 600,
+            "client_events": [
+                "audio",
+                "interruption",
+                "user_transcript",
+                "agent_response",
+                "agent_response_correction"
+            ],
+            "monitoring_enabled": false,
+            "monitoring_events": [
+                "user_transcript",
+                "agent_response",
+                "agent_response_correction"
+            ]
+        },
+        "language_presets": {
+            "fr": {
+                "overrides": {
+                    "turn": null,
+                    "agent": {
+                        "first_message": "Bienvenue chez Builder's Hub Hardware, comment puis-je vous aider aujourd'hui ?"
+                    }
+                },
+                "first_message_translation": {
+                    "source_hash": "{\"firstMessage\":\"Welcome to Builder's Hub Hardware, how can I help you today?\",\"language\":\"en\"}",
+                    "text": "Bienvenue chez Builder's Hub Hardware, comment puis-je vous aider aujourd'hui ?"
+                },
+                "soft_timeout_translation": null
+            }
+        },
+        "vad": {
+            "background_voice_detection": false
+        },
+        "agent": {
+            "first_message": "Welcome to Builder's Hub Hardware, how can I help you today?",
+            "language": "en",
+            "hinglish_mode": false,
+            "dynamic_variables": {
+                "dynamic_variable_placeholders": {
+                    "locations": "{     \"locations\": [         {             \"id\": \"8c5dc6ab-a958-4b1d-be32-5b38bdb21b80\",             \"name\": \"Oakville\",             \"hours\": {                 \"Monday - Saturday\": \"8:00 AM to 9:00 PM\",                 \"Sunday\": \"10:00 AM to 6:00 PM\"             },             \"departments\": [                 \"Sales\",                 \"Customer Service\",                 \"Tool Rental\",                 \"Contractor Desk\"             ]         },         {             \"id\": \"d8e8f8f8-3d3d-4c4c-8c8c-8c8c8c8c8c8c\",             \"name\": \"Burnaby\",             \"hours\": {                 \"Monday - Friday\": \"7:30 AM to 9:00 PM\",                 \"Saturday\": \"8:00 AM to 8:00 PM\",                 \"Sunday\": \"10:00 AM to 5:00 PM\"             },             \"departments\": [                 \"Sales\",                 \"Customer Service\",                 \"Pro Desk\"             ]         },         {             \"id\": \"123e4567-e89b-12d3-a456-426614174000\",             \"name\": \"Halifax\",             \"hours\": {                 \"Monday - Saturday\": \"8:00 AM to 10:00 PM\",                 \"Sunday\": \"9:00 AM to 7:00 PM\"             },             \"departments\": [                 \"Sales\",                 \"Customer Service\",                 \"Tool Rental\",                 \"Garden Center\"             ]         }     ] }",
+                    "location_names": "Oakville, Burnaby, or Halifax"
+                }
+            },
+            "disable_first_message_interruptions": false,
+            "prompt": {
+                "prompt": "### **1. Introduction & Core Directive**\n\nYou are a friendly and efficient virtual receptionist for Builder's Hub Hardware. Your primary role is to answer incoming calls, determine the caller's needs, and provide assistance using the tools and dynamic information available to you. Since this phone number serves multiple store locations, your absolute first step is to always clarify which location the caller is interested in **using the dynamically provided store list** before proceeding. Your main tasks are to check product inventory and route calls to the appropriate store associate when necessary.\n\n### **2. Rules & Constraints**\n\n* **Always identify the location first.** Before any other action, you must determine the caller's desired store location. Present the list of store names from the knowledge data. For example: \"Thanks for calling Builder's Hub. Which of our locations can I help you with today: {{location_names}}?\"  \n* **Use the inventory_check tool correctly.** If a caller asks about product availability, you MUST use this tool. You must first get the item_name and the caller's chosen store_name. Then, you must find the corresponding store_id (the UUID) from the knowledge data to use in the tool call.  \n* **Be precise with tool results.** When the tool returns inventory status, relay that information clearly. If an item is out of stock at the selected location, offer to check other locations or connect the caller to a store associate.  \n* **Handle transfers effectively.** If a request is outside your capabilities (e.g., project advice, order issues), offer a transfer. First, confirm the location, then list the available departments for that specific location from the knowledge data before transferring.  \n* **Do not guess or hallucinate.** If you do not have the information or a tool to find it, state that you are unable to help with that specific request and offer to transfer the caller to someone who can.  \n* **Maintain a conversational flow.** Keep your responses concise. Wait for the caller to finish speaking before you respond.\n* **Format for Natural Speech.** When relaying information like prices or quantities from the inventory tool, format it to be spoken naturally. For example, a price of \"$6.50\" should be stated as \"six dollars and fifty cents,\" and a quantity of \"1200\" should be read as \"twelve hundred.\"\n\n### **3. Personality & Tone**\n\nYour persona should be professional, patient, and consistently helpful. Use a clear and welcoming tone. You are the first point of contact for the customer, so it's important to be friendly and make them feel valued. Phrases like \"I can certainly help with that,\" \"Of course,\" and \"Let me check on that for you\" should be used to create a positive experience.\n\n### **4. Tools**\n\nYou have access to the following tool:\n\n* **inventory_check**: Use this tool to check if an item is in stock at a specific store.  \n  * **Parameters**:  \n    * item_name (string, required): The name of the product the user is asking about. E.g., \"DeWalt 20V MAX cordless drill\".  \n    * store_id (string, required): The UUID of the specific store location, retrieved from the knowledge data.\n\n### **5. Knowledge (Dynamically Provided)**\n\nYou will be provided with a JSON object containing the necessary information for all store locations for each session. **You must use this data as the single source of truth for locations, hours, and departments.** The data will follow this structure:  \n\n```json\n{{  \n  \"locations\": [  \n    {  \n      \"id\": \"f47ac10b-58cc-4372-a567-0e02b2c3d479\",  \n      \"name\": \"Oakville\",  \n      \"hours\": {  \n        \"Monday - Saturday\": \"8:00 AM to 9:00 PM\",  \n        \"Sunday\": \"10:00 AM to 6:00 PM\"  \n      },  \n      \"departments\": [\"Sales\", \"Customer Service\", \"Tool Rental\", \"Contractor Desk\"]  \n    },  \n    {  \n      \"id\": \"d8e8f8f8-3d3d-4c4c-8c8c-8c8c8c8c8c8c\",  \n      \"name\": \"Burnaby\",  \n      \"hours\": {  \n        \"Monday - Friday\": \"7:30 AM to 9:00 PM\",  \n        \"Saturday\": \"8:00 AM to 8:00 PM\",  \n        \"Sunday\": \"10:00 AM to 5:00 PM\"  \n      },  \n      \"departments\": [\"Sales\", \"Customer Service\", \"Pro Desk\"]  \n    },  \n    {  \n      \"id\": \"123e4567-e89b-12d3-a456-426614174000\",  \n      \"name\": \"Halifax\",  \n      \"hours\": {  \n        \"Monday - Saturday\": \"8:00 AM to 10:00 PM\",  \n        \"Sunday\": \"9:00 AM to 7:00 PM\"  \n      },  \n      \"departments\": [\"Sales\", \"Customer Service\", \"Tool Rental\", \"Garden Center\"]  \n    }  \n  ]  \n}}\n```\n\nHere is the location data:\n```json\n{{locations}}\n```\n\n### **6. Examples (Few-shot Prompts)**\n\n**Example 1: Successful Inventory Check**\n\n* **User**: \"Hi, I was wondering if you have any pressure-treated 2x4s?\"  \n* **Agent**: \"I can certainly check that for you. Which of our locations are you interested in today: Oakville, Burnaby, or Halifax?\"  \n* **User**: \"Oakville.\"  \n* **Agent**: [inventory_c​heck(item_n​ame=\"pressure−treated2x4s\",store_i​d=\"f47ac10b−58cc−4372−a567−0e02b2c3d479\")]\n  -> \"Yes, it looks like we have plenty of pressure-treated 2x4s in stock at our Oakville location. Can I help with anything else?\"\n\n**Example 2: Location-Specific Hours Query**\n\n* **User**: \"What time do you close in Burnaby tonight?\"  \n* **Agent**: [knowledge_base(question='what are business hours', ,store_i​d=\"d8e8f8f8-3d3d-4c4c-8c8c-8c8c8c8c8c8c\")]\n  \"Our Burnaby location closes at 9:00 PM tonight. Is there anything else I can help with?\"\n\n**Example 3: Location-Specific Call Transfer**\n\n* **User**: \"I need to talk to someone about a problem with a recent delivery.\"  \n* **Agent**: \"I understand. I'll need to connect you with our customer service team for that. Which store location was this regarding?\"  \n* **User**: \"The Burnaby store.\"  \n* **Agent**: \"Thank you. Please hold while I connect you to Customer Service at our Burnaby location.\"\n",
+                "llm": "custom-llm",
+                "reasoning_effort": "low",
+                "temperature": 0,
+                "max_tokens": 5000,
+                "tool_ids": [
+                    "tool_2801k5hnwtrte3tt2k8sdnta1v62"
+                ],
+                "built_in_tools": {
+                    "end_call": {
+                        "type": "system",
+                        "name": "end_call",
+                        "description": "",
+                        "response_timeout_secs": 20,
+                        "disable_interruptions": false,
+                        "force_pre_tool_speech": false,
+                        "assignments": [],
+                        "tool_call_sound": null,
+                        "tool_call_sound_behavior": "auto",
+                        "params": {
+                            "system_tool_type": "end_call"
+                        }
+                    },
+                    "language_detection": {
+                        "type": "system",
+                        "name": "language_detection",
+                        "description": "",
+                        "response_timeout_secs": 20,
+                        "disable_interruptions": false,
+                        "force_pre_tool_speech": false,
+                        "assignments": [],
+                        "tool_call_sound": null,
+                        "tool_call_sound_behavior": "auto",
+                        "params": {
+                            "system_tool_type": "language_detection"
+                        }
+                    },
+                    "skip_turn": {
+                        "type": "system",
+                        "name": "skip_turn",
+                        "description": "",
+                        "response_timeout_secs": 20,
+                        "disable_interruptions": false,
+                        "force_pre_tool_speech": false,
+                        "assignments": [],
+                        "tool_call_sound": null,
+                        "tool_call_sound_behavior": "auto",
+                        "params": {
+                            "system_tool_type": "skip_turn"
+                        }
+                    }
+                },
+                "mcp_server_ids": [],
+                "native_mcp_server_ids": [],
+                "knowledge_base": [],
+                "custom_llm": {
+                    "url": "https://yorrick.ngrok.dev/v1",
+                    "model_id": "gemini/gemini-2.5-flash",
+                    "request_headers": {},
+                    "api_type": "chat_completions"
+                },
+                "ignore_default_personality": false,
+                "rag": {
+                    "enabled": false,
+                    "embedding_model": "e5_mistral_7b_instruct",
+                    "max_vector_distance": 0.6,
+                    "max_documents_length": 50000,
+                    "max_retrieved_rag_chunks_count": 20,
+                    "query_rewrite_prompt_override": null
+                },
+                "timezone": "America/New_York",
+                "backup_llm_config": {
+                    "preference": "override",
+                    "order": []
+                },
+                "tools": [
+                    {
+                        "type": "webhook",
+                        "name": "inventory_check",
+                        "description": "Use this tool to check if an item is in stock at a specific store.  ",
+                        "response_timeout_secs": 20,
+                        "disable_interruptions": true,
+                        "force_pre_tool_speech": true,
+                        "assignments": [],
+                        "tool_call_sound": null,
+                        "tool_call_sound_behavior": "auto",
+                        "dynamic_variables": {
+                            "dynamic_variable_placeholders": {}
+                        },
+                        "execution_mode": "immediate",
+                        "api_schema": {
+                            "request_headers": {
+                                "auth": {
+                                    "secret_id": "KJJhxT27sAGy7yUkUluz"
+                                }
+                            },
+                            "url": "https://yorrick.ngrok.dev/tools/inventory_check",
+                            "method": "GET",
+                            "path_params_schema": {},
+                            "query_params_schema": {
+                                "properties": {
+                                    "store_id": {
+                                        "type": "string",
+                                        "description": "The UUID of the specific store location, retrieved from the knowledge data.",
+                                        "is_system_provided": false,
+                                        "dynamic_variable": "",
+                                        "constant_value": ""
+                                    },
+                                    "item_name": {
+                                        "type": "string",
+                                        "description": "The name of the product the user is asking about. E.g., \"DeWalt 20V MAX cordless drill\".  ",
+                                        "is_system_provided": false,
+                                        "dynamic_variable": "",
+                                        "constant_value": ""
+                                    }
+                                },
+                                "required": [
+                                    "store_id",
+                                    "item_name"
+                                ]
+                            },
+                            "content_type": "application/json"
+                        }
+                    },
+                    {
+                        "type": "system",
+                        "name": "end_call",
+                        "description": "",
+                        "response_timeout_secs": 20,
+                        "disable_interruptions": false,
+                        "force_pre_tool_speech": false,
+                        "assignments": [],
+                        "tool_call_sound": null,
+                        "tool_call_sound_behavior": "auto",
+                        "params": {
+                            "system_tool_type": "end_call"
+                        }
+                    },
+                    {
+                        "type": "system",
+                        "name": "language_detection",
+                        "description": "",
+                        "response_timeout_secs": 20,
+                        "disable_interruptions": false,
+                        "force_pre_tool_speech": false,
+                        "assignments": [],
+                        "tool_call_sound": null,
+                        "tool_call_sound_behavior": "auto",
+                        "params": {
+                            "system_tool_type": "language_detection"
+                        }
+                    },
+                    {
+                        "type": "system",
+                        "name": "skip_turn",
+                        "description": "",
+                        "response_timeout_secs": 20,
+                        "disable_interruptions": false,
+                        "force_pre_tool_speech": false,
+                        "assignments": [],
+                        "tool_call_sound": null,
+                        "tool_call_sound_behavior": "auto",
+                        "params": {
+                            "system_tool_type": "skip_turn"
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "platform_settings": {
+        "evaluation": {
+            "criteria": []
+        },
+        "widget": {
+            "variant": "full",
+            "placement": "bottom-right",
+            "expandable": "never",
+            "avatar": {
+                "type": "orb",
+                "color1": "#2792dc",
+                "color2": "#9ce6e6"
+            },
+            "feedback_mode": "during",
+            "end_feedback": null,
+            "bg_color": "#ffffff",
+            "text_color": "#000000",
+            "btn_color": "#000000",
+            "btn_text_color": "#ffffff",
+            "border_color": "#e1e1e1",
+            "focus_color": "#000000",
+            "shareable_page_show_terms": true,
+            "terms_text": "#### Terms and conditions\n\nBy clicking \"Agree,\" and each time I interact with this AI agent, I consent to the recording, storage, and sharing of my communications with third-party service providers, and as described in the Privacy Policy.\nIf you do not wish to have your conversations recorded, please refrain from using this service.",
+            "terms_html": "<h4>Terms and conditions</h4>\n<p>By clicking &quot;Agree,&quot; and each time I interact with this AI agent, I consent to the recording, storage, and sharing of my communications with third-party service providers, and as described in the Privacy Policy.\nIf you do not wish to have your conversations recorded, please refrain from using this service.</p>\n",
+            "show_avatar_when_collapsed": false,
+            "disable_banner": false,
+            "markdown_link_allowed_hosts": [],
+            "markdown_link_include_www": true,
+            "markdown_link_allow_http": true,
+            "mic_muting_enabled": false,
+            "transcript_enabled": false,
+            "text_input_enabled": true,
+            "conversation_mode_toggle_enabled": false,
+            "default_expanded": false,
+            "always_expanded": false,
+            "text_contents": {
+                "initiate_feedback": null,
+                "request_follow_up_feedback": null,
+                "thanks_for_feedback": null,
+                "thanks_for_feedback_details": null,
+                "follow_up_feedback_placeholder": null,
+                "submit": null,
+                "go_back": null
+            },
+            "styles": {},
+            "language_selector": false,
+            "supports_text_only": true,
+            "language_presets": {
+                "fr": {
+                    "terms_text": "#### Conditions générales\n\nEn cliquant sur \"Accepter\", et chaque fois que j'interagis avec cet agent IA, je consens à l'enregistrement, au stockage et au partage de mes communications avec des prestataires de services tiers, et comme décrit dans la Politique de confidentialité. Si vous ne souhaitez pas que vos conversations soient enregistrées, veuillez vous abstenir d'utiliser ce service.",
+                    "terms_html": "<h4>Conditions générales</h4>\n<p>En cliquant sur &quot;Accepter&quot;, et chaque fois que j'interagis avec cet agent IA, je consens à l'enregistrement, au stockage et au partage de mes communications avec des prestataires de services tiers, et comme décrit dans la Politique de confidentialité. Si vous ne souhaitez pas que vos conversations soient enregistrées, veuillez vous abstenir d'utiliser ce service.</p>\n",
+                    "terms_key": null,
+                    "terms_translation": {
+                        "source_hash": "{\"termsText\":\"#### Terms and conditions\\n\\nBy clicking \\\"Agree,\\\" and each time I interact with this AI agent, I consent to the recording, storage, and sharing of my communications with third-party service providers, and as described in the Privacy Policy.\\nIf you do not wish to have your conversations recorded, please refrain from using this service.\",\"language\":\"en\"}",
+                        "text": "#### Conditions générales\n\nEn cliquant sur \"Accepter\", et chaque fois que j'interagis avec cet agent IA, je consens à l'enregistrement, au stockage et au partage de mes communications avec des prestataires de services tiers, et comme décrit dans la Politique de confidentialité. Si vous ne souhaitez pas que vos conversations soient enregistrées, veuillez vous abstenir d'utiliser ce service."
+                    }
+                }
+            }
+        },
+        "data_collection": {},
+        "overrides": {
+            "conversation_config_override": {
+                "turn": {
+                    "soft_timeout_config": {
+                        "message": false
+                    }
+                },
+                "tts": {
+                    "voice_id": false,
+                    "stability": false,
+                    "speed": false,
+                    "similarity_boost": false
+                },
+                "conversation": {
+                    "text_only": true
+                },
+                "agent": {
+                    "first_message": false,
+                    "language": true,
+                    "prompt": {
+                        "prompt": false,
+                        "llm": false,
+                        "native_mcp_server_ids": false
+                    }
+                }
+            },
+            "custom_llm_extra_body": false,
+            "enable_conversation_initiation_client_data_from_webhook": false
+        },
+        "workspace_overrides": {
+            "webhooks": {
+                "events": [
+                    "transcript"
+                ],
+                "send_audio": false
+            }
+        },
+        "testing": {
+            "attached_tests": [
+                {
+                    "test_id": "test_7301keb0sc6zftp8d6214k020c3q"
+                }
+            ],
+            "referenced_tests_ids": [
+                "test_7301keb0sc6zftp8d6214k020c3q"
+            ]
+        },
+        "archived": false,
+        "guardrails": {
+            "version": "1",
+            "moderation": {
+                "config": {
+                    "sexual": {
+                        "is_enabled": false,
+                        "threshold": 0.3
+                    },
+                    "violence": {
+                        "is_enabled": false,
+                        "threshold": 0.3
+                    },
+                    "violence_graphic": {
+                        "is_enabled": false,
+                        "threshold": 0.3
+                    },
+                    "harassment": {
+                        "is_enabled": false,
+                        "threshold": 0.3
+                    },
+                    "harassment_threatening": {
+                        "is_enabled": false,
+                        "threshold": 0.3
+                    },
+                    "hate": {
+                        "is_enabled": false,
+                        "threshold": 0.3
+                    },
+                    "hate_threatening": {
+                        "is_enabled": false,
+                        "threshold": 0.3
+                    },
+                    "self_harm_instructions": {
+                        "is_enabled": false,
+                        "threshold": 0.3
+                    },
+                    "self_harm": {
+                        "is_enabled": false,
+                        "threshold": 0.3
+                    },
+                    "self_harm_intent": {
+                        "is_enabled": false,
+                        "threshold": 0.3
+                    },
+                    "sexual_minors": {
+                        "is_enabled": false,
+                        "threshold": 0.3
+                    }
+                }
+            }
+        },
+        "auth": {
+            "enable_auth": false,
+            "allowlist": []
+        },
+        "call_limits": {
+            "agent_concurrency_limit": -1,
+            "daily_limit": 100000,
+            "bursting_enabled": true
+        },
+        "ban": null,
+        "privacy": {
+            "record_voice": true,
+            "retention_days": -1,
+            "delete_transcript_and_pii": false,
+            "delete_audio": false,
+            "apply_to_existing_conversations": false,
+            "zero_retention_mode": false
+        },
+        "safety": {
+            "is_blocked_ivc": false,
+            "is_blocked_non_ivc": false,
+            "ignore_safety_evaluation": false
+        }
+    },
+    "tags": []
+}
